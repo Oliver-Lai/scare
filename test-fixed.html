@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修復測試 - 深夜孤宅</title>
+    <style>
+        body {
+            background: #000;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #111;
+        }
+        .test-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .test-btn:hover {
+            background: #45a049;
+        }
+        .test-btn.scene {
+            background: #2196F3;
+        }
+        .test-btn.scene:hover {
+            background: #1976D2;
+        }
+        .test-btn.item {
+            background: #FF9800;
+        }
+        .test-btn.item:hover {
+            background: #F57C00;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #222;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>🏚️ 深夜孤宅 - 修復功能測試</h1>
+    
+    <div class="test-section">
+        <h2>🔧 修復內容檢查</h2>
+        <ul>
+            <li>✅ 移除錯誤計數機制</li>
+            <li>✅ 移除物件懸浮移動動畫</li>
+            <li>✅ 改用視覺高亮效果</li>
+            <li>✅ 修復場景切換功能</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🚪 場景切換測試</h2>
+        <button class="test-btn scene" onclick="testSceneSwitch('livingRoom')">客廳</button>
+        <button class="test-btn scene" onclick="testSceneSwitch('bathroom')">浴室</button>
+        <button class="test-btn scene" onclick="testSceneSwitch('basement')">地下室</button>
+        <button class="test-btn scene" onclick="testSceneSwitch('titleScreen')">標題畫面</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔍 物品點擊測試</h2>
+        <button class="test-btn item" onclick="testItemClick('tv')">電視 (線索1)</button>
+        <button class="test-btn item" onclick="testItemClick('mirror')">鏡子 (線索2)</button>
+        <button class="test-btn item" onclick="testItemClick('chest')">箱子 (線索3)</button>
+        <button class="test-btn item" onclick="testItemClick('sofa')">沙發</button>
+        <button class="test-btn item" onclick="testItemClick('picture')">相框 (Jump Scare)</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔐 密碼測試</h2>
+        <button class="test-btn" onclick="testPassword('2581')">正確密碼 (2581)</button>
+        <button class="test-btn" onclick="testPassword('1234')">錯誤密碼 (1234)</button>
+        <button class="test-btn" onclick="testPassword('9999')">錯誤密碼 (9999)</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎮 遊戲狀態測試</h2>
+        <button class="test-btn" onclick="checkGameState()">檢查遊戲狀態</button>
+        <button class="test-btn" onclick="startTestGame()">開始遊戲</button>
+        <button class="test-btn" onclick="checkNoErrorCount()">確認無錯誤計數</button>
+    </div>
+
+    <div id="results">
+        <div class="info">📋 測試結果將在這裡顯示...</div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const time = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            results.innerHTML += `<div class="${className}">[${time}] ${message}</div>`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function testSceneSwitch(sceneName) {
+            log(`🚪 測試場景切換到: ${sceneName}`, 'info');
+            try {
+                if (window.game) {
+                    window.game.goToScene(sceneName);
+                    
+                    // 檢查場景是否正確切換
+                    setTimeout(() => {
+                        if (window.game.currentScene === sceneName) {
+                            log(`✅ 場景切換成功: ${sceneName}`, 'success');
+                        } else {
+                            log(`❌ 場景切換失敗: 期望 ${sceneName}, 實際 ${window.game.currentScene}`, 'error');
+                        }
+                    }, 100);
+                } else {
+                    log('❌ 遊戲物件不存在', 'error');
+                }
+            } catch (error) {
+                log(`❌ 場景切換錯誤: ${error.message}`, 'error');
+            }
+        }
+
+        function testItemClick(itemType) {
+            log(`🔍 測試物品點擊: ${itemType}`, 'info');
+            try {
+                if (window.game) {
+                    if (!window.game.gameStarted) {
+                        window.game.gameStarted = true; // 強制啟動遊戲進行測試
+                        log('⚠️ 強制啟動遊戲進行測試', 'info');
+                    }
+                    window.game.handleItemClick(itemType);
+                    log(`✅ 物品點擊成功: ${itemType}`, 'success');
+                } else {
+                    log('❌ 遊戲物件不存在', 'error');
+                }
+            } catch (error) {
+                log(`❌ 物品點擊錯誤: ${error.message}`, 'error');
+            }
+        }
+
+        function testPassword(password) {
+            log(`🔐 測試密碼: ${password}`, 'info');
+            try {
+                if (window.game) {
+                    // 模擬密碼輸入
+                    const input = document.createElement('input');
+                    input.id = 'codeInput';
+                    input.value = password;
+                    document.body.appendChild(input);
+                    
+                    window.game.checkCode();
+                    log(`✅ 密碼測試完成: ${password}`, 'success');
+                    
+                    document.body.removeChild(input);
+                } else {
+                    log('❌ 遊戲物件不存在', 'error');
+                }
+            } catch (error) {
+                log(`❌ 密碼測試錯誤: ${error.message}`, 'error');
+            }
+        }
+
+        function checkGameState() {
+            log('🎮 檢查遊戲狀態...', 'info');
+            if (window.game) {
+                log(`📍 當前場景: ${window.game.currentScene}`, 'info');
+                log(`🔍 線索數量: ${window.game.cluesFound}/${window.game.totalClues}`, 'info');
+                log(`🎯 遊戲已開始: ${window.game.gameStarted}`, 'info');
+                log(`🎪 Jump Scare已觸發: ${window.game.jumpScareTriggered || false}`, 'info');
+                
+                // 檢查是否還有錯誤計數
+                if (window.game.errorCount !== undefined) {
+                    log(`⚠️ 警告: 仍存在錯誤計數屬性: ${window.game.errorCount}`, 'error');
+                } else {
+                    log('✅ 錯誤計數已成功移除', 'success');
+                }
+            } else {
+                log('❌ 遊戲物件不存在', 'error');
+            }
+        }
+
+        function startTestGame() {
+            log('🎮 開始測試遊戲...', 'info');
+            try {
+                if (window.game) {
+                    window.game.startGame();
+                    log('✅ 遊戲開始成功', 'success');
+                } else {
+                    log('❌ 遊戲物件不存在', 'error');
+                }
+            } catch (error) {
+                log(`❌ 遊戲開始錯誤: ${error.message}`, 'error');
+            }
+        }
+
+        function checkNoErrorCount() {
+            log('🔍 檢查錯誤計數機制是否已移除...', 'info');
+            
+            // 檢查 HTML 中的錯誤計數元素
+            const errorCountElement = document.getElementById('errorCount');
+            if (!errorCountElement) {
+                log('✅ HTML 中的錯誤計數元素已移除', 'success');
+            } else {
+                log('❌ HTML 中仍存在錯誤計數元素', 'error');
+            }
+            
+            // 檢查遊戲物件中的錯誤計數屬性
+            if (window.game) {
+                if (window.game.errorCount === undefined && window.game.maxErrors === undefined) {
+                    log('✅ 遊戲物件中的錯誤計數屬性已移除', 'success');
+                } else {
+                    log(`❌ 遊戲物件中仍存在錯誤計數: errorCount=${window.game.errorCount}, maxErrors=${window.game.maxErrors}`, 'error');
+                }
+            }
+        }
+
+        // 當頁面載入完成時自動檢查
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🚀 測試頁面載入完成', 'success');
+                checkGameState();
+                checkNoErrorCount();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

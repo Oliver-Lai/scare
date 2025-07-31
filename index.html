@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深夜孤宅 - 恐怖密室逃脫</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 背景音樂 -->
+    <audio id="bgMusic" loop>
+        <source src="assets/creepy_music.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- Jump Scare 音效 -->
+    <audio id="scareSound">
+        <source src="assets/scream.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 遊戲主容器 -->
+    <div id="gameContainer">
+        <!-- 標題畫面 -->
+        <div id="titleScreen" class="screen active">
+            <div class="title-content">
+                <h1 class="game-title">深夜孤宅</h1>
+                <p class="subtitle">你在一棟廢棄屋中醒來...<br>你必須解開謎題逃離這裡</p>
+                <button id="startGame" class="btn">開始遊戲</button>
+                <div class="warning">⚠️ 本遊戲包含恐怖內容，請謹慎遊玩</div>
+            </div>
+        </div>
+
+        <!-- 客廳場景 -->
+        <div id="livingRoom" class="scene">
+            <div class="scene-content">
+                <h2>客廳</h2>
+                <div class="room-layout">
+                    <!-- SVG 客廳背景 -->
+                    <svg width="800" height="500" class="room-bg">
+                        <!-- 定義漸變和陰影 -->
+                        <defs>
+                            <linearGradient id="wallGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2a2a4e;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#1a1a2e;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0f0f1a;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="floorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0a0a0a;stop-opacity:1" />
+                            </linearGradient>
+                            <radialGradient id="lightGradient" cx="50%" cy="30%" r="60%">
+                                <stop offset="0%" style="stop-color:#4a4a6e;stop-opacity:0.3" />
+                                <stop offset="100%" style="stop-color:#000;stop-opacity:0.8" />
+                            </radialGradient>
+                            <linearGradient id="sofaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#4a4a4a;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#2d2d2d;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a1a1a;stop-opacity:1" />
+                            </linearGradient>
+                            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge> 
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.5"/>
+                            </filter>
+                        </defs>
+                        
+                        <!-- 牆壁（帶漸變） -->
+                        <rect x="0" y="0" width="800" height="400" fill="url(#wallGradient)" stroke="#16213e" stroke-width="2"/>
+                        
+                        <!-- 地板（帶漸變和木紋效果） -->
+                        <rect x="0" y="400" width="800" height="100" fill="url(#floorGradient)"/>
+                        <!-- 木紋線條 -->
+                        <g opacity="0.3">
+                            <line x1="0" y1="420" x2="800" y2="420" stroke="#333" stroke-width="1"/>
+                            <line x1="0" y1="440" x2="800" y2="440" stroke="#333" stroke-width="1"/>
+                            <line x1="0" y1="460" x2="800" y2="460" stroke="#333" stroke-width="1"/>
+                            <line x1="0" y1="480" x2="800" y2="480" stroke="#333" stroke-width="1"/>
+                        </g>
+                        
+                        <!-- 環境光效 -->
+                        <rect x="0" y="0" width="800" height="500" fill="url(#lightGradient)"/>
+                        
+                        <!-- 沙發（更寫實） -->
+                        <g class="clickable animated-item" data-item="sofa" filter="url(#shadow)" onclick="handleItemClick('sofa')" style="cursor: pointer;">
+                            <!-- 沙發主體 -->
+                            <rect x="100" y="300" width="200" height="80" fill="url(#sofaGradient)" rx="5" class="clickable" data-item="sofa"/>
+                            <!-- 沙發背墊 -->
+                            <rect x="110" y="285" width="180" height="25" fill="#3d3d3d" rx="3" class="clickable" data-item="sofa"/>
+                            <!-- 沙發扶手 -->
+                            <rect x="95" y="290" width="15" height="70" fill="#2a2a2a" rx="2" class="clickable" data-item="sofa"/>
+                            <rect x="295" y="290" width="15" height="70" fill="#2a2a2a" rx="2" class="clickable" data-item="sofa"/>
+                            <!-- 坐墊縫線 -->
+                            <line x1="150" y1="310" x2="150" y2="370" stroke="#1a1a1a" stroke-width="2" class="clickable" data-item="sofa"/>
+                            <line x1="200" y1="310" x2="200" y2="370" stroke="#1a1a1a" stroke-width="2" class="clickable" data-item="sofa"/>
+                            <line x1="250" y1="310" x2="250" y2="370" stroke="#1a1a1a" stroke-width="2" class="clickable" data-item="sofa"/>
+                            <!-- 沙發腿 -->
+                            <rect x="115" y="380" width="8" height="15" fill="#1a1a1a" class="clickable" data-item="sofa"/>
+                            <rect x="177" y="380" width="8" height="15" fill="#1a1a1a" class="clickable" data-item="sofa"/>
+                            <rect x="215" y="380" width="8" height="15" fill="#1a1a1a" class="clickable" data-item="sofa"/>
+                            <rect x="277" y="380" width="8" height="15" fill="#1a1a1a" class="clickable" data-item="sofa"/>
+                        </g>
+                        
+                        <!-- 電視（更寫實） -->
+                        <g class="clickable animated-item" data-item="tv" filter="url(#shadow)" onclick="handleItemClick('tv')" style="cursor: pointer;">
+                            <!-- 電視螢幕 -->
+                            <rect x="500" y="200" width="150" height="100" fill="#000" rx="3" class="clickable" data-item="tv"/>
+                            <!-- 螢幕邊框 -->
+                            <rect x="495" y="195" width="160" height="110" fill="#2a2a2a" rx="5" stroke="#333" stroke-width="2" class="clickable" data-item="tv"/>
+                            <!-- 電視支架 -->
+                            <rect x="570" y="300" width="10" height="30" fill="#333" class="clickable" data-item="tv"/>
+                            <rect x="550" y="325" width="50" height="10" fill="#333" rx="2" class="clickable" data-item="tv"/>
+                            <!-- 螢幕雜訊效果 -->
+                            <g class="static-noise">
+                                <rect x="505" y="205" width="2" height="2" fill="#fff" opacity="0.3" class="clickable" data-item="tv">
+                                    <animate attributeName="opacity" values="0.3;0.8;0.1;0.6;0.2" dur="0.1s" repeatCount="indefinite"/>
+                                </rect>
+                                <rect x="520" y="220" width="2" height="2" fill="#fff" opacity="0.5" class="clickable" data-item="tv">
+                                    <animate attributeName="opacity" values="0.5;0.1;0.9;0.3;0.7" dur="0.15s" repeatCount="indefinite"/>
+                                </rect>
+                                <rect x="580" y="240" width="2" height="2" fill="#fff" opacity="0.4" class="clickable" data-item="tv">
+                                    <animate attributeName="opacity" values="0.4;0.9;0.2;0.8;0.1" dur="0.12s" repeatCount="indefinite"/>
+                                </rect>
+                                <!-- 數字2在螢幕上閃爍 -->
+                                <text x="575" y="250" text-anchor="middle" fill="#0f0" font-size="20" font-weight="bold" opacity="0.7" class="clickable" data-item="tv">
+                                    2
+                                    <animate attributeName="opacity" values="0.7;0.3;0.9;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+                                </text>
+                            </g>
+                        </g>
+                        
+                        <!-- 書架（更寫實） -->
+                        <g class="clickable animated-item" data-item="bookshelf" filter="url(#shadow)" onclick="handleItemClick('bookshelf')" style="cursor: pointer;">
+                            <!-- 書架主體 -->
+                            <rect x="50" y="100" width="80" height="200" fill="#4a4a4a" stroke="#666" stroke-width="1"/>
+                            <!-- 書架層板 -->
+                            <rect x="50" y="145" width="80" height="5" fill="#666"/>
+                            <rect x="50" y="195" width="80" height="5" fill="#666"/>
+                            <rect x="50" y="245" width="80" height="5" fill="#666"/>
+                            <!-- 書本 -->
+                            <rect x="55" y="105" width="8" height="35" fill="#8b4513"/>
+                            <rect x="65" y="105" width="10" height="35" fill="#2f4f2f"/>
+                            <rect x="77" y="105" width="7" height="35" fill="#4b0082"/>
+                            <rect x="86" y="105" width="9" height="35" fill="#8b0000"/>
+                            <rect x="97" y="105" width="6" height="35" fill="#006400"/>
+                            <rect x="105" y="105" width="8" height="35" fill="#8b4513"/>
+                            <rect x="115" y="105" width="10" height="35" fill="#191970"/>
+                            
+                            <rect x="55" y="155" width="9" height="35" fill="#556b2f"/>
+                            <rect x="66" y="155" width="7" height="35" fill="#8b0000"/>
+                            <rect x="75" y="155" width="11" height="35" fill="#2f4f4f"/>
+                            <rect x="88" y="155" width="8" height="35" fill="#4b0082"/>
+                            <rect x="98" y="155" width="6" height="35" fill="#8b4513"/>
+                            <rect x="106" y="155" width="9" height="35" fill="#006400"/>
+                            <rect x="117" y="155" width="8" height="35" fill="#8b0000"/>
+                            
+                            <!-- 神秘書本（發光） -->
+                            <rect x="85" y="205" width="12" height="35" fill="#ffd700" filter="url(#glow)">
+                                <animate attributeName="fill" values="#ffd700;#ffff00;#ffd700" dur="3s" repeatCount="indefinite"/>
+                            </rect>
+                            <text x="91" y="225" text-anchor="middle" fill="#000" font-size="6" font-weight="bold">鏡中真相</text>
+                        </g>
+                        
+                        <!-- 門（更寫實） -->
+                        <g class="clickable animated-item" data-item="door" filter="url(#shadow)">
+                            <!-- 門框 -->
+                            <rect x="695" y="145" width="90" height="190" fill="#8b4513" stroke="#654321" stroke-width="3"/>
+                            <!-- 門板 -->
+                            <rect x="700" y="150" width="80" height="180" fill="#654321"/>
+                            <!-- 門板木紋 -->
+                            <rect x="705" y="155" width="70" height="60" fill="#5a3a1a" stroke="#4a2a0a" stroke-width="1" fill-opacity="0.3"/>
+                            <rect x="705" y="225" width="70" height="60" fill="#5a3a1a" stroke="#4a2a0a" stroke-width="1" fill-opacity="0.3"/>
+                            <rect x="705" y="265" width="70" height="60" fill="#5a3a1a" stroke="#4a2a0a" stroke-width="1" fill-opacity="0.3"/>
+                            <!-- 門把 -->
+                            <circle cx="720" cy="240" r="8" fill="#ffd700" stroke="#daa520" stroke-width="2"/>
+                            <circle cx="720" cy="240" r="3" fill="#b8860b"/>
+                            <!-- 鎖孔 -->
+                            <ellipse cx="720" cy="245" rx="2" ry="1" fill="#000"/>
+                        </g>
+                        
+                        <!-- 相框（更寫實） -->
+                        <g class="clickable animated-item" data-item="picture" filter="url(#shadow)" onclick="handleItemClick('picture')" style="cursor: pointer;">
+                            <!-- 相框外框 -->
+                            <rect x="295" y="115" width="70" height="90" fill="#8b4513" stroke="#654321" stroke-width="2"/>
+                            <!-- 相框內框 -->
+                            <rect x="300" y="120" width="60" height="80" fill="#2f1b14"/>
+                            <!-- 照片 -->
+                            <rect x="305" y="125" width="50" height="70" fill="#1a1a1a"/>
+                            <!-- 詭異人影 -->
+                            <ellipse cx="330" cy="145" rx="8" ry="12" fill="#333" opacity="0.6">
+                                <animate attributeName="opacity" values="0.6;0.2;0.8;0.3;0.7" dur="4s" repeatCount="indefinite"/>
+                            </ellipse>
+                            <!-- 眼睛 -->
+                            <circle cx="327" cy="142" r="2" fill="#ff0000" opacity="0.8">
+                                <animate attributeName="opacity" values="0.8;0.1;0.9;0.2;0.7" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="333" cy="142" r="2" fill="#ff0000" opacity="0.8">
+                                <animate attributeName="opacity" values="0.8;0.2;0.9;0.1;0.7" dur="3.5s" repeatCount="indefinite"/>
+                            </circle>
+                            <!-- 裂痕效果 -->
+                            <line x1="320" y1="130" x2="340" y2="180" stroke="#444" stroke-width="1" opacity="0.5"/>
+                            <line x1="315" y1="160" x2="345" y2="170" stroke="#444" stroke-width="1" opacity="0.3"/>
+                        </g>
+                    </svg>
+                </div>
+                
+                <!-- 場景按鈕 -->
+                <div class="navigation">
+                    <button class="nav-btn" onclick="goToScene('bathroom')">🚪 前往浴室</button>
+                    <button class="nav-btn" onclick="goToScene('basement')">⬇️ 前往地下室</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 浴室場景 -->
+        <div id="bathroom" class="scene">
+            <div class="scene-content">
+                <h2>浴室</h2>
+                <div class="room-layout">
+                    <svg width="800" height="500" class="room-bg">
+                        <!-- 定義漸變和效果 -->
+                        <defs>
+                            <linearGradient id="bathroomWallGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2a2a4e;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a1a2e;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="tileGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#0a0a0a;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="bathtubGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#e0e0e0;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="mirrorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#b0e0e6;stop-opacity:0.8" />
+                                <stop offset="50%" style="stop-color:#87ceeb;stop-opacity:0.9" />
+                                <stop offset="100%" style="stop-color:#4682b4;stop-opacity:0.7" />
+                            </linearGradient>
+                            <filter id="waterRipple" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur in="SourceGraphic" stdDeviation="1"/>
+                                <feColorMatrix type="saturate" values="1.2"/>
+                            </filter>
+                            <filter id="steamEffect" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feFlood flood-color="#ffffff" flood-opacity="0.1"/>
+                                <feComposite in="blur" operator="screen"/>
+                            </filter>
+                        </defs>
+                        
+                        <!-- 牆壁（帶瓷磚效果） -->
+                        <rect x="0" y="0" width="800" height="400" fill="url(#bathroomWallGradient)" stroke="#16213e" stroke-width="2"/>
+                        <!-- 瓷磚格線 -->
+                        <g opacity="0.3">
+                            <defs>
+                                <pattern id="tiles" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                                    <rect width="40" height="40" fill="none" stroke="#333" stroke-width="1"/>
+                                </pattern>
+                            </defs>
+                            <rect x="0" y="0" width="800" height="400" fill="url(#tiles)"/>
+                        </g>
+                        
+                        <!-- 地板 -->
+                        <rect x="0" y="400" width="800" height="100" fill="url(#tileGradient)"/>
+                        
+                        <!-- 浴缸（更寫實） -->
+                        <g class="clickable animated-item" data-item="bathtub" filter="url(#shadow)" onclick="handleItemClick('bathtub')" style="cursor: pointer;">
+                            <!-- 浴缸外殼 -->
+                            <ellipse cx="200" cy="350" rx="130" ry="45" fill="#ddd"/>
+                            <!-- 浴缸內部 -->
+                            <ellipse cx="200" cy="345" rx="120" ry="40" fill="url(#bathtubGradient)"/>
+                            <!-- 水面效果 -->
+                            <ellipse cx="200" cy="345" rx="115" ry="35" fill="#1a1a2e" opacity="0.3" filter="url(#waterRipple)">
+                                <animateTransform attributeName="transform" type="scale" values="1;1.02;1" dur="3s" repeatCount="indefinite"/>
+                            </ellipse>
+                            <!-- 浴缸邊緣 -->
+                            <ellipse cx="200" cy="340" rx="125" ry="42" fill="none" stroke="#ccc" stroke-width="3"/>
+                            <!-- 排水孔 -->
+                            <circle cx="200" cy="350" r="3" fill="#666"/>
+                            <!-- 水龍頭 -->
+                            <rect x="90" y="330" width="15" height="25" fill="#c0c0c0" rx="3"/>
+                            <circle cx="97" cy="340" r="5" fill="#999"/>
+                            <!-- 水滴動畫 -->
+                            <circle cx="97" cy="355" r="1" fill="#87ceeb" opacity="0.8">
+                                <animate attributeName="cy" values="355;365;355" dur="2s" repeatCount="indefinite"/>
+                                <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        
+                        <!-- 鏡子（更寫實） -->
+                        <g class="clickable animated-item" data-item="mirror" filter="url(#shadow)" onclick="handleItemClick('mirror')" style="cursor: pointer;">
+                            <!-- 鏡框 -->
+                            <rect x="390" y="90" width="170" height="140" fill="#4a4a4a" stroke="#666" stroke-width="3" rx="5"/>
+                            <!-- 鏡面 -->
+                            <rect x="400" y="100" width="150" height="120" fill="url(#mirrorGradient)" rx="3"/>
+                            <!-- 裂痕 -->
+                            <path d="M 420 110 L 470 180 M 450 115 L 520 160 M 480 120 L 530 200" stroke="#333" stroke-width="2" opacity="0.6"/>
+                            <!-- 反射中的數字5 -->
+                            <text x="475" y="170" text-anchor="middle" fill="#ff6b6b" font-size="24" font-weight="bold" opacity="0.7">
+                                5
+                                <animate attributeName="opacity" values="0.7;0.9;0.5;0.8;0.6" dur="2.5s" repeatCount="indefinite"/>
+                                <animateTransform attributeName="transform" type="rotate" values="0 475 170;2 475 170;-2 475 170;0 475 170" dur="4s" repeatCount="indefinite"/>
+                            </text>
+                            <!-- 霧氣效果 -->
+                            <ellipse cx="475" cy="160" rx="30" ry="20" fill="#ffffff" opacity="0.1" filter="url(#steamEffect)">
+                                <animate attributeName="opacity" values="0.1;0.3;0.1" dur="3s" repeatCount="indefinite"/>
+                            </ellipse>
+                        </g>
+                        
+                        <!-- 洗手台（更寫實） -->
+                        <g filter="url(#shadow)">
+                            <!-- 洗手台盆 -->
+                            <ellipse cx="475" cy="280" rx="75" ry="30" fill="#ffffff"/>
+                            <ellipse cx="475" cy="275" rx="70" ry="25" fill="#f8f8f8"/>
+                            <!-- 洗手台底座 -->
+                            <rect x="400" y="300" width="150" height="20" fill="#e0e0e0" rx="3"/>
+                            <!-- 水龍頭 -->
+                            <rect x="470" y="250" width="10" height="20" fill="#c0c0c0" rx="2"/>
+                            <ellipse cx="475" cy="250" rx="8" ry="5" fill="#999"/>
+                            <circle cx="475" cy="250" r="3" fill="#666"/>
+                        </g>
+                        
+                        <!-- 藥櫃（更寫實） -->
+                        <g class="clickable animated-item" data-item="cabinet" filter="url(#shadow)" onclick="handleItemClick('cabinet')" style="cursor: pointer;">
+                            <!-- 櫃體 -->
+                            <rect x="600" y="120" width="100" height="80" fill="#8b4513" stroke="#654321" stroke-width="2" rx="3"/>
+                            <!-- 櫃門分隔線 -->
+                            <line x1="650" y1="120" x2="650" y2="200" stroke="#654321" stroke-width="3"/>
+                            <!-- 左門把手 -->
+                            <circle cx="630" cy="160" r="4" fill="#ffd700" stroke="#daa520" stroke-width="1"/>
+                            <!-- 右門把手 -->
+                            <circle cx="670" cy="160" r="4" fill="#ffd700" stroke="#daa520" stroke-width="1"/>
+                            <!-- 櫃門木紋 -->
+                            <rect x="605" y="125" width="40" height="70" fill="#5a3a1a" opacity="0.2"/>
+                            <rect x="655" y="125" width="40" height="70" fill="#5a3a1a" opacity="0.2"/>
+                            <!-- 縫隙陰影 -->
+                            <line x1="650" y1="125" x2="650" y2="195" stroke="#2a1a0a" stroke-width="1"/>
+                            <!-- 藥瓶隱約可見 -->
+                            <rect x="610" y="130" width="6" height="15" fill="#4169e1" opacity="0.3"/>
+                            <rect x="620" y="135" width="5" height="12" fill="#ff6347" opacity="0.3"/>
+                            <rect x="660" y="132" width="7" height="14" fill="#32cd32" opacity="0.3"/>
+                            <rect x="675" y="140" width="5" height="10" fill="#ffd700" opacity="0.3"/>
+                        </g>
+                    </svg>
+                </div>
+                
+                <div class="navigation">
+                    <button class="nav-btn" onclick="goToScene('livingRoom')">🏠 回到客廳</button>
+                    <button class="nav-btn" onclick="goToScene('basement')">⬇️ 前往地下室</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 地下室場景 -->
+        <div id="basement" class="scene">
+            <div class="scene-content">
+                <h2>地下室</h2>
+                <div class="room-layout">
+                    <svg width="800" height="500" class="room-bg">
+                        <!-- 定義地下室特效 -->
+                        <defs>
+                            <linearGradient id="basementWallGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#1a1a1a;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#0d0d0d;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="stairGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#555;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#333;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="chestGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#8b4513;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+                            </linearGradient>
+                            <radialGradient id="skullGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#ff0000;stop-opacity:0.8" />
+                                <stop offset="100%" style="stop-color:#000;stop-opacity:0" />
+                            </radialGradient>
+                            <filter id="flickerLight" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feFlood flood-color="#ffffff" flood-opacity="0.05"/>
+                                <feComposite in="blur" operator="screen"/>
+                            </filter>
+                            <filter id="dustParticles" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="1" result="blur"/>
+                                <feColorMatrix type="saturate" values="0.3"/>
+                            </filter>
+                        </defs>
+                        
+                        <!-- 牆壁（石磚效果） -->
+                        <rect x="0" y="0" width="800" height="400" fill="url(#basementWallGradient)" stroke="#333" stroke-width="2"/>
+                        <!-- 石磚紋理 -->
+                        <g opacity="0.4">
+                            <rect x="0" y="0" width="100" height="50" fill="none" stroke="#222" stroke-width="1"/>
+                            <rect x="100" y="0" width="100" height="50" fill="none" stroke="#222" stroke-width="1"/>
+                            <rect x="200" y="0" width="100" height="50" fill="none" stroke="#222" stroke-width="1"/>
+                            <rect x="0" y="50" width="100" height="50" fill="none" stroke="#222" stroke-width="1"/>
+                            <rect x="100" y="50" width="100" height="50" fill="none" stroke="#222" stroke-width="1"/>
+                            <rect x="200" y="50" width="100" height="50" fill="none" stroke="#222" stroke-width="1"/>
+                            <rect x="0" y="100" width="100" height="50" fill="none" stroke="#222" stroke-width="1"/>
+                            <rect x="100" y="100" width="100" height="50" fill="none" stroke="#222" stroke-width="1"/>
+                        </g>
+                        
+                        <!-- 地板（潮濕石板） -->
+                        <rect x="0" y="400" width="800" height="100" fill="#000"/>
+                        <!-- 地板縫隙 -->
+                        <g opacity="0.3">
+                            <line x1="0" y1="425" x2="800" y2="425" stroke="#111" stroke-width="2"/>
+                            <line x1="0" y1="450" x2="800" y2="450" stroke="#111" stroke-width="2"/>
+                            <line x1="0" y1="475" x2="800" y2="475" stroke="#111" stroke-width="2"/>
+                        </g>
+                        
+                        <!-- 微弱光源效果 -->
+                        <ellipse cx="400" cy="50" rx="200" ry="100" fill="#ffffff" opacity="0.02" filter="url(#flickerLight)">
+                            <animate attributeName="opacity" values="0.02;0.05;0.01;0.03;0.02" dur="4s" repeatCount="indefinite"/>
+                        </ellipse>
+                        
+                        <!-- 樓梯（更寫實） -->
+                        <g filter="url(#shadow)">
+                            <!-- 樓梯主體 -->
+                            <polygon points="50,400 150,300 200,300 200,320 170,320 170,340 140,340 140,360 110,360 110,380 80,380 80,400" fill="url(#stairGradient)" stroke="#666" stroke-width="2"/>
+                            <!-- 樓梯台階邊緣 -->
+                            <line x1="150" y1="300" x2="200" y2="300" stroke="#777" stroke-width="2"/>
+                            <line x1="170" y1="320" x2="200" y2="320" stroke="#777" stroke-width="2"/>
+                            <line x1="140" y1="340" x2="170" y2="340" stroke="#777" stroke-width="2"/>
+                            <line x1="110" y1="360" x2="140" y2="360" stroke="#777" stroke-width="2"/>
+                            <line x1="80" y1="380" x2="110" y2="380" stroke="#777" stroke-width="2"/>
+                            <!-- 扶手 -->
+                            <line x1="50" y1="395" x2="150" y2="295" stroke="#654321" stroke-width="4"/>
+                            <!-- 扶手支柱 -->
+                            <rect x="70" y="380" width="3" height="15" fill="#654321"/>
+                            <rect x="100" y="350" width="3" height="15" fill="#654321"/>
+                            <rect x="130" y="320" width="3" height="15" fill="#654321"/>
+                        </g>
+                        
+                        <!-- 老舊箱子（更寫實） -->
+                        <g class="clickable animated-item" data-item="chest" filter="url(#shadow)" onclick="handleItemClick('chest')" style="cursor: pointer;">
+                            <!-- 箱子主體 -->
+                            <rect x="300" y="320" width="100" height="80" fill="url(#chestGradient)" stroke="#4a2a1a" stroke-width="2" rx="3"/>
+                            <!-- 箱子蓋子 -->
+                            <rect x="305" y="325" width="90" height="15" fill="#8b4513" rx="2"/>
+                            <!-- 金屬邊角 -->
+                            <rect x="295" y="315" width="10" height="10" fill="#666"/>
+                            <rect x="395" y="315" width="10" height="10" fill="#666"/>
+                            <rect x="295" y="395" width="10" height="10" fill="#666"/>
+                            <rect x="395" y="395" width="10" height="10" fill="#666"/>
+                            <!-- 鎖扣 -->
+                            <circle cx="350" cy="370" r="8" fill="#ffd700" stroke="#daa520" stroke-width="2">
+                                <animate attributeName="fill" values="#ffd700;#ffff00;#ffd700" dur="3s" repeatCount="indefinite"/>
+                            </circle>
+                            <rect x="347" y="367" width="6" height="6" fill="#b8860b"/>
+                            <!-- 木紋 -->
+                            <line x1="310" y1="330" x2="390" y2="330" stroke="#5a3a1a" stroke-width="1" opacity="0.5"/>
+                            <line x1="310" y1="350" x2="390" y2="350" stroke="#5a3a1a" stroke-width="1" opacity="0.5"/>
+                            <line x1="310" y1="370" x2="390" y2="370" stroke="#5a3a1a" stroke-width="1" opacity="0.5"/>
+                            <line x1="310" y1="390" x2="390" y2="390" stroke="#5a3a1a" stroke-width="1" opacity="0.5"/>
+                            <!-- 灰塵效果 -->
+                            <ellipse cx="350" cy="340" rx="20" ry="10" fill="#333" opacity="0.2" filter="url(#dustParticles)"/>
+                        </g>
+                        
+                        <!-- 密碼鎖門（更寫實） -->
+                        <g class="clickable animated-item" data-item="lockedDoor" filter="url(#shadow)" onclick="handleItemClick('lockedDoor')" style="cursor: pointer;">
+                            <!-- 門框 -->
+                            <rect x="595" y="195" width="110" height="160" fill="#3a3a3a" stroke="#555" stroke-width="3" rx="5"/>
+                            <!-- 門板 -->
+                            <rect x="600" y="200" width="100" height="150" fill="#2f2f2f" rx="3"/>
+                            <!-- 密碼鎖面板 -->
+                            <rect x="625" y="240" width="50" height="60" fill="#000" stroke="#333" stroke-width="2" rx="3"/>
+                            <!-- 螢幕 -->
+                            <rect x="630" y="250" width="40" height="20" fill="#001100" stroke="#00ff00" stroke-width="1"/>
+                            <!-- CODE 文字 -->
+                            <text x="650" y="265" text-anchor="middle" fill="#00ff00" font-size="10" font-weight="bold">
+                                CODE
+                                <animate attributeName="fill" values="#00ff00;#00aa00;#00ff00" dur="2s" repeatCount="indefinite"/>
+                            </text>
+                            <!-- 數字鍵盤 -->
+                            <rect x="630" y="275" width="8" height="6" fill="#333" stroke="#555" stroke-width="0.5"/>
+                            <rect x="641" y="275" width="8" height="6" fill="#333" stroke="#555" stroke-width="0.5"/>
+                            <rect x="652" y="275" width="8" height="6" fill="#333" stroke="#555" stroke-width="0.5"/>
+                            <rect x="630" y="284" width="8" height="6" fill="#333" stroke="#555" stroke-width="0.5"/>
+                            <rect x="641" y="284" width="8" height="6" fill="#333" stroke="#555" stroke-width="0.5"/>
+                            <rect x="652" y="284" width="8" height="6" fill="#333" stroke="#555" stroke-width="0.5"/>
+                            <!-- 門把手 -->
+                            <circle cx="620" cy="275" r="5" fill="#666"/>
+                            <!-- 鉸鏈 -->
+                            <rect x="590" y="210" width="8" height="15" fill="#444"/>
+                            <rect x="590" y="240" width="8" height="15" fill="#444"/>
+                            <rect x="590" y="320" width="8" height="15" fill="#444"/>
+                            <!-- 狀態指示燈 -->
+                            <circle cx="670" cy="245" r="2" fill="#ff0000">
+                                <animate attributeName="fill" values="#ff0000;#aa0000;#ff0000" dur="1.5s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        
+                        <!-- 骷髏（更寫實恐怖） -->
+                        <g class="clickable animated-item" data-item="skull" filter="url(#shadow)" onclick="handleItemClick('skull')" style="cursor: pointer;">
+                            <!-- 骷髏主體 -->
+                            <ellipse cx="500" cy="350" rx="28" ry="32" fill="#f5f5dc" stroke="#e0e0e0" stroke-width="2"/>
+                            <!-- 額骨 -->
+                            <ellipse cx="500" cy="335" rx="25" ry="15" fill="#eeeedc"/>
+                            <!-- 眼眶 -->
+                            <ellipse cx="490" cy="340" rx="8" ry="10" fill="#000"/>
+                            <ellipse cx="510" cy="340" rx="8" ry="10" fill="#000"/>
+                            <!-- 恐怖紅光眼睛 -->
+                            <circle cx="490" cy="340" r="3" fill="#ff0000" filter="url(#glow)">
+                                <animate attributeName="opacity" values="0.8;0.3;1;0.5;0.9" dur="2s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="510" cy="340" r="3" fill="#ff0000" filter="url(#glow)">
+                                <animate attributeName="opacity" values="0.9;0.4;0.8;0.6;1" dur="2.3s" repeatCount="indefinite"/>
+                            </circle>
+                            <!-- 鼻骨 -->
+                            <polygon points="500,345 495,360 505,360" fill="#000"/>
+                            <!-- 嘴部 -->
+                            <ellipse cx="500" cy="365" rx="12" ry="8" fill="#000"/>
+                            <!-- 牙齒 -->
+                            <rect x="492" y="361" width="3" height="8" fill="#f5f5dc"/>
+                            <rect x="497" y="361" width="3" height="6" fill="#f5f5dc"/>
+                            <rect x="502" y="361" width="3" height="8" fill="#f5f5dc"/>
+                            <rect x="507" y="361" width="3" height="6" fill="#f5f5dc"/>
+                            <!-- 裂縫 -->
+                            <line x1="485" y1="330" x2="515" y2="370" stroke="#ccc" stroke-width="1" opacity="0.7"/>
+                            <line x1="475" y1="345" x2="490" y2="365" stroke="#ccc" stroke-width="1" opacity="0.5"/>
+                            <!-- 恐怖光暈 -->
+                            <ellipse cx="500" cy="350" rx="35" ry="40" fill="url(#skullGlow)" opacity="0.3">
+                                <animate attributeName="opacity" values="0.3;0.1;0.4;0.2;0.3" dur="3s" repeatCount="indefinite"/>
+                            </ellipse>
+                            <!-- 下顎骨 -->
+                            <ellipse cx="500" cy="375" rx="20" ry="8" fill="#f0f0dc" stroke="#e0e0e0" stroke-width="1"/>
+                        </g>
+                        
+                        <!-- 蜘蛛網 -->
+                        <g opacity="0.4">
+                            <path d="M 750 50 Q 780 80 750 110 Q 720 80 750 50" stroke="#666" stroke-width="1" fill="none"/>
+                            <path d="M 750 50 L 780 110" stroke="#666" stroke-width="0.5"/>
+                            <path d="M 750 50 L 720 110" stroke="#666" stroke-width="0.5"/>
+                            <path d="M 735 65 L 765 95" stroke="#666" stroke-width="0.5"/>
+                            <!-- 蜘蛛 -->
+                            <circle cx="760" cy="85" r="2" fill="#333">
+                                <animateTransform attributeName="transform" type="translate" values="0,0;-5,-5;0,0;5,5;0,0" dur="5s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        
+                        <!-- 飄浮灰塵粒子 -->
+                        <g opacity="0.2">
+                            <circle cx="150" cy="150" r="1" fill="#666">
+                                <animateTransform attributeName="transform" type="translate" values="0,0;10,20;-5,40;15,60;0,80" dur="10s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="350" cy="100" r="0.5" fill="#666">
+                                <animateTransform attributeName="transform" type="translate" values="0,0;-8,15;12,30;-6,45;0,60" dur="12s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle cx="550" cy="120" r="1" fill="#666">
+                                <animateTransform attributeName="transform" type="translate" values="0,0;5,18;-10,35;8,50;0,70" dur="8s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                    </svg>
+                </div>
+                
+                <div class="navigation">
+                    <button class="nav-btn" onclick="goToScene('livingRoom')">🏠 回到客廳</button>
+                    <button class="nav-btn" onclick="goToScene('bathroom')">🚿 前往浴室</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 密碼輸入對話框 -->
+        <div id="codeDialog" class="dialog">
+            <div class="dialog-content">
+                <h3>密碼門</h3>
+                <p>請輸入4位數密碼：</p>
+                <input type="text" id="codeInput" maxlength="4" pattern="[0-9]{4}">
+                <div class="dialog-buttons">
+                    <button onclick="checkCode()">確認</button>
+                    <button onclick="closeDialog()">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 物品檢視對話框 -->
+        <div id="itemDialog" class="dialog">
+            <div class="dialog-content">
+                <h3 id="itemTitle"></h3>
+                <p id="itemDescription"></p>
+                <div class="dialog-buttons">
+                    <button onclick="closeDialog()">關閉</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Jump Scare 畫面 -->
+        <div id="jumpScare" class="jumpscare">
+            <svg width="100%" height="100%" class="scare-image">
+                <!-- 定義恐怖效果 -->
+                <defs>
+                    <radialGradient id="bloodGradient" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#ff0000;stop-opacity:1" />
+                        <stop offset="70%" style="stop-color:#8b0000;stop-opacity:0.8" />
+                        <stop offset="100%" style="stop-color:#000000;stop-opacity:1" />
+                    </radialGradient>
+                    <filter id="scareGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+                        <feMerge> 
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                    <filter id="distortion" x="-20%" y="-20%" width="140%" height="140%">
+                        <feTurbulence baseFrequency="0.02" numOctaves="3" result="noise"/>
+                        <feDisplacementMap in="SourceGraphic" in2="noise" scale="20"/>
+                    </filter>
+                </defs>
+                
+                <!-- 背景 -->
+                <rect width="100%" height="100%" fill="#000"/>
+                
+                <!-- 血紅背景效果 -->
+                <rect width="100%" height="100%" fill="url(#bloodGradient)" opacity="0.6">
+                    <animate attributeName="opacity" values="0.6;1;0.3;0.9;0.4" dur="0.1s" repeatCount="indefinite"/>
+                </rect>
+                
+                <!-- 恐怖臉孔主體 -->
+                <g filter="url(#scareGlow)">
+                    <!-- 頭顱輪廓 -->
+                    <ellipse cx="50%" cy="35%" rx="120" ry="140" fill="#2f2f2f" stroke="#ff0000" stroke-width="5"/>
+                    
+                    <!-- 額頭裂痕 -->
+                    <path d="M 45% 20% L 55% 30% M 40% 25% L 60% 35%" stroke="#8b0000" stroke-width="3" opacity="0.8"/>
+                    
+                    <!-- 眼眶 -->
+                    <ellipse cx="42%" cy="30%" rx="15" ry="20" fill="#000"/>
+                    <ellipse cx="58%" cy="30%" rx="15" ry="20" fill="#000"/>
+                    
+                    <!-- 恐怖眼球 -->
+                    <circle cx="42%" cy="30%" r="12" fill="#ff0000" filter="url(#scareGlow)">
+                        <animate attributeName="r" values="12;8;15;10;12" dur="0.2s" repeatCount="indefinite"/>
+                        <animate attributeName="fill" values="#ff0000;#ffffff;#ff0000;#000000;#ff0000" dur="0.3s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="58%" cy="30%" r="12" fill="#ff0000" filter="url(#scareGlow)">
+                        <animate attributeName="r" values="10;15;8;12;10" dur="0.25s" repeatCount="indefinite"/>
+                        <animate attributeName="fill" values="#ff0000;#000000;#ffffff;#ff0000;#ff0000" dur="0.35s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <!-- 瞳孔 -->
+                    <circle cx="42%" cy="30%" r="5" fill="#000">
+                        <animate attributeName="r" values="5;2;8;3;5" dur="0.15s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="58%" cy="30%" r="5" fill="#000">
+                        <animate attributeName="r" values="3;8;2;5;3" dur="0.18s" repeatCount="indefinite"/>
+                    </circle>
+                    
+                    <!-- 鼻子（腐爛效果） -->
+                    <polygon points="50%,40% 47%,50% 53%,50%" fill="#1a1a1a"/>
+                    <polygon points="49%,45% 46%,50% 50%,52%" fill="#8b0000"/>
+                    
+                    <!-- 恐怖嘴巴 -->
+                    <ellipse cx="50%" cy="55%" rx="25" ry="15" fill="#000"/>
+                    <!-- 牙齒 -->
+                    <rect x="45%" y="50%" width="3" height="15" fill="#ffffff">
+                        <animate attributeName="height" values="15;20;10;18;15" dur="0.2s" repeatCount="indefinite"/>
+                    </rect>
+                    <rect x="49%" y="50%" width="4" height="20" fill="#ffffff"/>
+                    <rect x="54%" y="50%" width="3" height="18" fill="#ffffff">
+                        <animate attributeName="height" values="18;12;22;15;18" dur="0.3s" repeatCount="indefinite"/>
+                    </rect>
+                    <rect x="58%" y="50%" width="3" height="16" fill="#ffffff"/>
+                    
+                    <!-- 血液滴落 -->
+                    <path d="M 47% 65% L 47% 75% L 45% 80% L 49% 80% Z" fill="#8b0000">
+                        <animate attributeName="d" values="M 47% 65% L 47% 75% L 45% 80% L 49% 80% Z;M 47% 65% L 47% 85% L 45% 90% L 49% 90% Z;M 47% 65% L 47% 75% L 45% 80% L 49% 80% Z" dur="1s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M 53% 65% L 53% 80% L 51% 85% L 55% 85% Z" fill="#8b0000">
+                        <animate attributeName="d" values="M 53% 65% L 53% 80% L 51% 85% L 55% 85% Z;M 53% 65% L 53% 90% L 51% 95% L 55% 95% Z;M 53% 65% L 53% 80% L 51% 85% L 55% 85% Z" dur="1.2s" repeatCount="indefinite"/>
+                    </path>
+                </g>
+                
+                <!-- 抓痕效果 -->
+                <g opacity="0.7">
+                    <path d="M 30% 20% L 35% 80%" stroke="#8b0000" stroke-width="4" filter="url(#scareGlow)"/>
+                    <path d="M 32% 25% L 37% 85%" stroke="#8b0000" stroke-width="3" filter="url(#scareGlow)"/>
+                    <path d="M 34% 22% L 39% 82%" stroke="#8b0000" stroke-width="5" filter="url(#scareGlow)"/>
+                    
+                    <path d="M 70% 15% L 65% 75%" stroke="#8b0000" stroke-width="4" filter="url(#scareGlow)"/>
+                    <path d="M 68% 20% L 63% 80%" stroke="#8b0000" stroke-width="3" filter="url(#scareGlow)"/>
+                    <path d="M 66% 18% L 61% 78%" stroke="#8b0000" stroke-width="5" filter="url(#scareGlow)"/>
+                </g>
+                
+                <!-- 恐怖文字 -->
+                <text x="50%" y="85%" text-anchor="middle" fill="#ff0000" font-size="clamp(24px, 5vw, 48px)" font-weight="bold" filter="url(#scareGlow)">
+                    TRAPPED FOREVER
+                    <animate attributeName="fill" values="#ff0000;#ffffff;#ff0000;#000000;#ff0000" dur="0.1s" repeatCount="indefinite"/>
+                    <animateTransform attributeName="transform" type="scale" values="1;1.2;0.8;1.1;1" dur="0.2s" repeatCount="indefinite"/>
+                </text>
+                
+                <!-- 副文字 -->
+                <text x="50%" y="92%" text-anchor="middle" fill="#8b0000" font-size="clamp(16px, 3vw, 24px)" font-weight="bold" opacity="0.8">
+                    YOU CAN NEVER ESCAPE
+                    <animate attributeName="opacity" values="0.8;0.3;1;0.5;0.8" dur="0.3s" repeatCount="indefinite"/>
+                </text>
+                
+                <!-- 飄浮的詛咒符號 -->
+                <g opacity="0.6" filter="url(#scareGlow)">
+                    <text x="20%" y="30%" fill="#ff0000" font-size="20">☠</text>
+                    <text x="80%" y="40%" fill="#ff0000" font-size="16">☠</text>
+                    <text x="15%" y="70%" fill="#ff0000" font-size="18">☠</text>
+                    <text x="85%" y="75%" fill="#ff0000" font-size="14">☠</text>
+                    
+                    <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="20s" repeatCount="indefinite"/>
+                </g>
+                
+                <!-- 邊緣陰影效果 -->
+                <rect width="100%" height="100%" fill="none" stroke="#ff0000" stroke-width="10" opacity="0.5">
+                    <animate attributeName="stroke-width" values="10;20;5;15;10" dur="0.1s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.5;1;0.2;0.8;0.5" dur="0.2s" repeatCount="indefinite"/>
+                </rect>
+            </svg>
+        </div>
+
+        <!-- 勝利畫面 -->
+        <div id="winScreen" class="screen">
+            <div class="title-content">
+                <h1 class="game-title">恭喜逃脫！</h1>
+                <p class="subtitle">你逃出了這場夢魘</p>
+                <button onclick="restartGame()" class="btn">重新開始</button>
+            </div>
+        </div>
+
+        <!-- 失敗畫面 -->
+        <div id="gameOverScreen" class="screen">
+            <div class="title-content">
+                <h1 class="game-title">遊戲結束</h1>
+                <p class="subtitle">你被永遠困在這裡了...</p>
+                <button onclick="restartGame()" class="btn">重新開始</button>
+            </div>
+        </div>
+
+        <!-- 遊戲狀態 -->
+        <div id="gameStatus">
+            <div class="status-item">已找到的線索: <span id="clueCount">0</span>/3</div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // 全局函數來處理物品點擊
+        function handleItemClick(itemType) {
+            console.log('全局函數處理點擊:', itemType);
+            if (window.game && window.game.gameStarted) {
+                window.game.handleItemClick(itemType);
+            } else {
+                console.log('遊戲尚未開始或未初始化');
+            }
+        }
+        
+        // 全局函數來處理場景切換
+        function goToScene(sceneName) {
+            console.log('全局函數處理場景切換:', sceneName);
+            if (window.game) {
+                window.game.goToScene(sceneName);
+            } else {
+                console.log('遊戲未初始化');
+            }
+        }
+    </script>
+</body>
+</html>
